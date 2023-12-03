@@ -1,11 +1,13 @@
 // user.model.ts
 import { z } from "zod";
 
-export interface User {
+export interface PublicUser {
   userId: number;
   username: string;
+}
+export interface PrivateUser extends PublicUser {
   email: string;
-  passwordHash: string;
+  password: string;
 }
 
 export const createUserSchema = z.object({

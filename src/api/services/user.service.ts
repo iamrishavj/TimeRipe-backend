@@ -1,16 +1,42 @@
 // user.service.ts
-import { User } from "../models/user.model";
+import { PrivateUser, CreateUserInput } from "../models/user.model";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export const createUser = async (userData: User) => {
+export const createUser = async (userData: CreateUserInput["body"]) => {
   // Hash password, save user to DB using Prisma
+  const { username, email, password } = userData;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const user = await prisma.user.create({
+    data: {
+      username,
+      email,
+      password_hash: hashedPassword,
+    },
+  });
+  return user;
 };
 
-export const findUserByUsername = async (username: string) => {
+export const findUserByUsername = async (
+  username: string
+): Promise<PrivateUser | void> => {
   // Logic to find a user by username
+  const user = await prisma.user.findUnique({
+    where: {
+      username,
+    },
+  });
+  if (!user) {
+    return;
+  }
+  return {
+    userId: user.user_id,
+    username: user.username,
+    email: user.email,
+    password: user.password_hash,
+  };
 };
 
 // Other service functions...
