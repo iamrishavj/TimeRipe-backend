@@ -6,7 +6,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const createUser = async (userData: CreateUserInput["body"]) => {
-  // Hash password, save user to DB using Prisma
   const { username, email, password } = userData;
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
@@ -22,7 +21,6 @@ export const createUser = async (userData: CreateUserInput["body"]) => {
 export const findUserByUsername = async (
   username: string
 ): Promise<PrivateUser | void> => {
-  // Logic to find a user by username
   const user = await prisma.user.findUnique({
     where: {
       username,

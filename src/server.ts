@@ -10,7 +10,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello Backend!");
 });
 
-// CORS Middleware if you're calling the API from a different domain
+// CORS Middleware if calling the API from a different domain
 //app.use(cors());
 
 // Mounting user routes

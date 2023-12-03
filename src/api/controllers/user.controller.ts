@@ -9,10 +9,6 @@ export const registerUser = async (
   req: Request<{}, {}, CreateUserInput["body"]>,
   res: Response
 ) => {
-  // Your logic here, with req.body being already validated
-  // Extract user data from req.body
-  // Call UserService.createUser with the data
-  // Return the response
   const { username, email, password } = req.body;
   try {
     await UserService.createUser({
@@ -27,22 +23,19 @@ export const registerUser = async (
 };
 
 export const loginUser = async (req: Request, res: Response) => {
-  // Process login request
   const { username, password } = req.body;
-  // Extract user data from req.body
-  // Call UserService.findUserByUsername with the username
+
   const user = await UserService.findUserByUsername(username);
 
   if (!user) {
     return res.status(401).json({ message: "Invalid Credentials" });
   }
-  // Compare the password with the hashed password from the DB
+
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     return res.status(401).json({ message: "Invalid Credentials" });
   }
 
-  // Return the response
   return res.json({
     userId: user.userId,
     username: user.username,
