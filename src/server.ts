@@ -1,7 +1,12 @@
 import express, { Request, Response } from "express";
 import userRoutes from "./api/routes/user.route";
 
+import limiter from "./api/middleware/rateLimiter";
+
 const app = express();
+
+// Rate limiting middleware
+app.use(limiter);
 
 // Middleware to parse JSON bodies
 app.use(express.json());
