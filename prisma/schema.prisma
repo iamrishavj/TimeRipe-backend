@@ -1,13 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db" // SQLite database file
+}
 
 generator client {
   provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -20,7 +17,7 @@ model User {
 
 model Session {
   session_id   Int       @id @default(autoincrement())
-  title        String    @db.VarChar(20)
+  title        String    
   user_id      Int
   User         User      @relation(fields: [user_id], references: [user_id])
   created_at   DateTime  @default(now())
@@ -29,14 +26,14 @@ model Session {
 }
 
 model Task {
-  task_id      Int       @id @default(autoincrement()) // Changed to Int
+  task_id      Int       @id @default(autoincrement())
   session_id   Int
   Session      Session   @relation(fields: [session_id], references: [session_id])
   title        String
   description  String?
   status       String    // To track status ('Todo', 'Active', 'Finished')
   priority     String
-  order_index  Int       // Changed to Int for ordering
+  order_index  Int       // For ordering
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
 }
