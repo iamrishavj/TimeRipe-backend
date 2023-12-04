@@ -1,9 +1,13 @@
 import express, { Request, Response } from "express";
+import cors from "cors";
+
 import userRoutes from "./api/routes/user.route";
 
 import limiter from "./api/middleware/rateLimiter";
 
 const app = express();
+
+app.use(cors());
 
 // Rate limiting middleware
 app.use(limiter);

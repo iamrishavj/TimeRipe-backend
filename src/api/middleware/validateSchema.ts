@@ -13,7 +13,7 @@ const validate = (schema: ZodSchema) => {
 
       next();
     } catch (e: any) {
-      return res.status(400).send(e.errors);
+      return res.status(400).json({ message: e.issues[0].message });
     }
   };
 };
