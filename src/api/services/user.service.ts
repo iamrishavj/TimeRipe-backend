@@ -36,5 +36,3 @@ export const findUserByUsername = async (
     password: user.password_hash,
   };
 };
-
-// Other service functions...

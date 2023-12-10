@@ -1,10 +1,13 @@
 // user.controller.ts
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import "dotenv/config";
 
 import * as UserService from "../services/user.service";
 import { CreateUserInput, PublicUser } from "../models/user.model";
 import { isPrismaError } from "../../utils/errorTypeGaurd";
+import exp from "constants";
 
 export const registerUser = async (
   req: Request<{}, {}, CreateUserInput["body"]>,
@@ -34,16 +37,27 @@ export const loginUser = async (req: Request, res: Response) => {
   const user = await UserService.findUserByUsername(username);
 
   if (!user) {
-    return res.status(401).json({ message: "Invalid Credentials" });
+    return res.status(403).json({ message: "Invalid Credentials" });
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    return res.status(401).json({ message: "Invalid Credentials" });
+    return res.status(403).json({ message: "Invalid Credentials" });
   }
 
-  return res.status(200).json({
-    userId: user.userId,
-    username: user.username,
-  } as PublicUser);
+  const accessToken = jwt.sign(
+    { id: user.userId },
+    process.env.ACCESS_TOKEN_SECRET!,
+    {
+      expiresIn: "4h",
+    }
+  );
+
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    sameSite: "strict",
+    maxAge: 3600000,
+  });
+
+  return res.status(200).json({ accessToken: accessToken });
 };
