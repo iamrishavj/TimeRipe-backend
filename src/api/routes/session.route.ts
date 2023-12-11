@@ -11,6 +11,15 @@ router.post("/", authenticateToken, SessionController.createSessionForUserId);
 
 router.get("/:sessionId/tasks", SessionController.getSessionTasks);
 
-//router.post("/:sessionId/tasks", SessionController.createTasksForSessionId);
+router.post("/:sessionId/tasks", SessionController.createSessionTask);
+
+router.get("/:sessionId/tasks/:taskId", SessionController.getTaskinSession);
+
+router.put("/:sessionId/tasks/:taskId", SessionController.updateTaskinSession);
+
+router.delete(
+  "/:sessionId/tasks/:taskId",
+  SessionController.deleteTaskinSession
+);
 
 export default router;

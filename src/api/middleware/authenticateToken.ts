@@ -19,7 +19,9 @@ const authenticateToken = (
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!, (err, decoded) => {
     if (err) {
-      return res.status(403).json({ message: "Failed to authenticate token" });
+      return res
+        .status(403)
+        .json({ message: "Error while authenticating token" });
     }
 
     if (!decoded) {
