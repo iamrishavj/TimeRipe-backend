@@ -22,4 +22,9 @@ router.delete(
   SessionController.deleteTaskinSession
 );
 
+router.post(
+  "/:sessionId/tasks/bulk",
+  SessionController.bulkUploadTasksInSession
+);
+
 export default router;

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Task } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -92,4 +92,30 @@ export const deleteTaskinSession = async (
       session_id: sessionId,
     },
   });
+};
+
+export const bulkUploadTasksInSession = async (
+  sessionId: number,
+  tasks: Task[]
+) => {
+  for (const task of tasks) {
+    await prisma.task.upsert({
+      where: { task_id: task.task_id, session_id: sessionId },
+      update: {
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        order_index: task.order_index,
+      },
+      create: {
+        session_id: sessionId,
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        order_index: task.order_index,
+      },
+    });
+  }
 };

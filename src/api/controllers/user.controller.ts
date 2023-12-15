@@ -7,7 +7,6 @@ import "dotenv/config";
 import * as UserService from "../services/user.service";
 import { CreateUserInput, PublicUser } from "../models/user.model";
 import { isPrismaError } from "../../utils/errorTypeGaurd";
-import exp from "constants";
 
 export const registerUser = async (
   req: Request<{}, {}, CreateUserInput["body"]>,
@@ -21,6 +20,7 @@ export const registerUser = async (
       password,
     });
   } catch (error) {
+    console.error(error);
     if (isPrismaError(error) && error.code === "P2002") {
       return res
         .status(409)
@@ -53,11 +53,13 @@ export const loginUser = async (req: Request, res: Response) => {
     }
   );
 
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    sameSite: "strict",
-    maxAge: 3600000,
-  });
+  // res.cookie("accessToken", accessToken, {
+  //   httpOnly: true,
+  //   sameSite: "strict",
+  //   maxAge: 3600000,
+  // });
 
-  return res.status(200).json({ accessToken: accessToken });
+  return res
+    .status(200)
+    .json({ accessToken: accessToken, message: "Login Success" });
 };

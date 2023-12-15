@@ -1,5 +1,5 @@
 // user.service.ts
-import { PrivateUser, CreateUserInput } from "../models/user.model";
+import { PublicUser, CreateUserInput } from "../models/user.model";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 
@@ -18,17 +18,13 @@ export const createUser = async (userData: CreateUserInput["body"]) => {
   return user;
 };
 
-export const findUserByUsername = async (
-  username: string
-): Promise<PrivateUser | void> => {
+export const findUserByUsername = async (username: string) => {
   const user = await prisma.user.findUnique({
     where: {
       username,
     },
   });
-  if (!user) {
-    return;
-  }
+  if (!user) return null;
   return {
     userId: user.user_id,
     username: user.username,

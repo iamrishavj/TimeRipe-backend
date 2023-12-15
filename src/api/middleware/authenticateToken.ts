@@ -4,7 +4,7 @@ import "dotenv/config";
 
 // Define a custom Request type that includes the user property
 interface CustomRequest extends Request {
-  user?: JwtPayload | string;
+  user_id?: string;
 }
 
 const authenticateToken = (
@@ -24,11 +24,11 @@ const authenticateToken = (
         .json({ message: "Error while authenticating token" });
     }
 
-    if (!decoded) {
+    if (!decoded || typeof decoded !== "object" || !("id" in decoded)) {
       return res.status(403).json({ message: "Failed to authenticate token" });
     }
 
-    req.user = decoded as JwtPayload;
+    req.user_id = decoded.id;
 
     next();
   });
