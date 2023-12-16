@@ -8,31 +8,9 @@ import "dotenv/config";
 import * as UserService from "../services/user.service";
 import { CreateUserInput } from "../models/user.model";
 import { isPrismaError } from "../../utils/errorTypeGaurd";
+import { sendVerificationEmail } from "../services/mail.service";
 
-const sendVerificationEmail = async (
-  userId: number,
-  email: string,
-  token: string
-) => {
-  const transporter = await import("nodemailer").then((module) =>
-    module.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.AUTH_EMAIL,
-        pass: process.env.AUTH_PASSWORD,
-      },
-    })
-  );
-
-  const mailOptions = {
-    from: process.env.AUTH_EMAIL,
-    to: email,
-    subject: "TimeRipe - Email Verification",
-    html: `<h1>Click the link below to verify your email</h1>
-    <a href="${process.env.BACKEND_URL}/api/user/verify/${userId}/${token}">Verify Email</a>`,
-  };
-  await transporter.sendMail(mailOptions);
-};
+const emailTokenExpirationTime = 1000 * 60 * 60 * 24; // 24 hours
 
 export const registerUser = async (
   req: Request<{}, {}, CreateUserInput["body"]>,
@@ -47,13 +25,14 @@ export const registerUser = async (
     });
 
     const token = uuidV4();
-    await UserService.createVerificationToken(
-      newUserId,
-      token,
-      1000 * 60 * 60 * 24 // 24 hours
-    );
-
-    await sendVerificationEmail(newUserId, email, token);
+    await Promise.all([
+      UserService.createVerificationToken(
+        newUserId,
+        token,
+        emailTokenExpirationTime
+      ),
+      sendVerificationEmail(newUserId, email, token),
+    ]);
   } catch (error) {
     if (isPrismaError(error) && error.code === "P2002") {
       return res
@@ -71,12 +50,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
   const user = await UserService.findUserByUsername(username);
 
-  if (!user) {
-    return res.status(403).json({ message: "Invalid Credentials" });
-  }
-
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-  if (!isPasswordValid) {
+  if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(403).json({ message: "Invalid Credentials" });
   }
 
@@ -85,12 +59,15 @@ export const loginUser = async (req: Request, res: Response) => {
       await UserService.deleteUserVerification(user.userId);
 
       const token = uuidV4();
-      await UserService.createVerificationToken(
-        user.userId,
-        token,
-        1000 * 60 * 60 * 24 // 24 hours
-      );
-      await sendVerificationEmail(user.userId, user.email, token);
+
+      await Promise.all([
+        UserService.createVerificationToken(
+          user.userId,
+          token,
+          emailTokenExpirationTime
+        ),
+        sendVerificationEmail(user.userId, user.email, token),
+      ]);
       return res
         .status(403)
         .json({ message: "Token Expired. Verification Email sent again!" });
@@ -118,28 +95,20 @@ export const verifyUser = async (req: Request, res: Response) => {
       parseInt(userId)
     );
 
-    if (!userVerification) {
+    if (
+      !userVerification ||
+      userVerification.expiresAt < new Date() ||
+      userVerification.token !== token
+    ) {
       return res
         .status(403)
         .sendFile("errorVerification.html", { root: "./src/templates" });
     }
 
-    if (userVerification.expiresAt < new Date()) {
-      await UserService.deleteUserVerification(parseInt(userId));
-      return res
-        .status(403)
-        .sendFile("errorVerification.html", { root: "./src/templates" });
-    }
-
-    if (userVerification.token !== token) {
-      return res
-        .status(403)
-        .sendFile("errorVerification.html", { root: "./src/templates" });
-    }
-    //Verify user
+    // Verify user
     await UserService.verifyUser(parseInt(userId));
 
-    //Delete verification token
+    // Delete verification token
     await UserService.deleteUserVerification(parseInt(userId));
   } catch (error) {
     console.error(error);
