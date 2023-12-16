@@ -10,4 +10,6 @@ router.post("/signup", validate(createUserSchema), UserController.registerUser);
 
 router.post("/login", UserController.loginUser);
 
+router.get("/verify/:userId/:token", UserController.verifyUser);
+
 export default router;
