@@ -12,7 +12,17 @@ model User {
   username      String    @unique
   email         String    @unique
   password_hash String
+  verified      Boolean   @default(false)
   Sessions      Session[]
+  UserVerification UserVerification?
+}
+
+model UserVerification {
+  user_id       Int       @id
+  User          User      @relation(fields: [user_id], references: [user_id])
+  token         String
+  created_at    DateTime  @default(now())
+  expires_at    DateTime
 }
 
 model Session {
