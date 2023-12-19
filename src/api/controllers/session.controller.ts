@@ -42,6 +42,7 @@ export const getSessionTasks = async (req: Request, res: Response) => {
     const tasks = await SessionService.getSessionTasks(+sessionId);
     return res.json(tasks);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

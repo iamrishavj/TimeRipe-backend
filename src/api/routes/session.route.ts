@@ -9,9 +9,17 @@ router.get("/", authenticateToken, SessionController.getSessionsByUserId);
 
 router.post("/", authenticateToken, SessionController.createSessionForUserId);
 
-router.get("/:sessionId/tasks", SessionController.getSessionTasks);
+router.get(
+  "/:sessionId/tasks",
+  authenticateToken,
+  SessionController.getSessionTasks
+);
 
-router.post("/:sessionId/tasks", SessionController.createSessionTask);
+router.post(
+  "/:sessionId/tasks",
+  authenticateToken,
+  SessionController.createSessionTask
+);
 
 router.get("/:sessionId/tasks/:taskId", SessionController.getTaskinSession);
 

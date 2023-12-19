@@ -7,6 +7,14 @@ export const getSessionsByUserId = async (user_id: number) => {
     where: {
       user_id,
     },
+    orderBy: [
+      {
+        updated_at: "desc",
+      },
+      {
+        created_at: "desc",
+      },
+    ],
   });
 };
 
@@ -14,10 +22,20 @@ export const createSessionForUserId = async (
   user_id: number,
   title?: string
 ) => {
+  const currentDate = new Date();
+  const formattedDate = currentDate.toLocaleString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  });
+
   return await prisma.session.create({
     data: {
       user_id,
-      title: Date.now().toString(),
+      title: title || formattedDate,
     },
   });
 };

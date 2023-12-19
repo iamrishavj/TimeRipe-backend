@@ -2,13 +2,12 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { v4 as uuidV4 } from "uuid";
 import "dotenv/config";
 
 import * as UserService from "../services/user.service";
+import { sendVerificationEmail } from "../services/mail.service";
 import { CreateUserInput } from "../models/user.model";
 import { isPrismaError } from "../../utils/errorTypeGaurd";
-import { sendVerificationEmail } from "../services/mail.service";
 
 const emailTokenExpirationTime = 1000 * 60 * 60 * 24; // 24 hours
 
@@ -24,15 +23,7 @@ export const registerUser = async (
       password,
     });
 
-    const token = uuidV4();
-    await Promise.all([
-      UserService.createVerificationToken(
-        newUserId,
-        token,
-        emailTokenExpirationTime
-      ),
-      sendVerificationEmail(newUserId, email, token),
-    ]);
+    createAndSendEmailToken(newUserId, email);
   } catch (error) {
     if (isPrismaError(error) && error.code === "P2002") {
       return res
@@ -58,16 +49,8 @@ export const loginUser = async (req: Request, res: Response) => {
     if (await UserService.isTokenExpired(user.userId)) {
       await UserService.deleteUserVerification(user.userId);
 
-      const token = uuidV4();
+      createAndSendEmailToken(user.userId, user.email);
 
-      await Promise.all([
-        UserService.createVerificationToken(
-          user.userId,
-          token,
-          emailTokenExpirationTime
-        ),
-        sendVerificationEmail(user.userId, user.email, token),
-      ]);
       return res
         .status(403)
         .json({ message: "Token Expired. Verification Email sent again!" });
@@ -116,4 +99,17 @@ export const verifyUser = async (req: Request, res: Response) => {
   }
 
   return res.sendFile("userVerified.html", { root: "./src/templates" });
+};
+
+const createAndSendEmailToken = async (userId: number, email: string) => {
+  const token = await import("uuid").then((module) => module.v4());
+
+  await Promise.all([
+    UserService.createVerificationToken(
+      userId,
+      token,
+      emailTokenExpirationTime
+    ),
+    sendVerificationEmail(userId, email, token),
+  ]);
 };
