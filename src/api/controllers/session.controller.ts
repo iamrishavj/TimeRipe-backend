@@ -50,17 +50,20 @@ export const getSessionTasks = async (req: Request, res: Response) => {
 export const createSessionTask = async (req: Request, res: Response) => {
   const { sessionId } = req.params;
   const { title, description, status, order_index, priority } = req.body;
+  console.log(req.body);
   try {
     const task = await SessionService.createSessionTask(
       +sessionId,
       title,
       description,
       status,
-      order_index,
-      priority
+      priority,
+      +order_index
     );
+
     return res.json(task);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -78,6 +81,7 @@ export const getTaskinSession = async (req: Request, res: Response) => {
 export const updateTaskinSession = async (req: Request, res: Response) => {
   const { sessionId, taskId } = req.params;
   const { title, description, status, order_index, priority } = req.body;
+  console.log(req.body);
   try {
     const task = await SessionService.updateTaskinSession(
       +sessionId,
@@ -85,11 +89,12 @@ export const updateTaskinSession = async (req: Request, res: Response) => {
       title,
       description,
       status,
-      order_index,
-      priority
+      priority,
+      +order_index
     );
     return res.json(task);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
