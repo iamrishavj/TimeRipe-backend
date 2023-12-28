@@ -112,6 +112,17 @@ export const deleteTaskinSession = async (
   });
 };
 
+export const deleteAllStatusTasksinSession = async (
+  sessionId: number,
+  status: string
+) => {
+  return await prisma.task.deleteMany({
+    where: {
+      session_id: sessionId,
+      status,
+    },
+  });
+};
 export const bulkUploadTasksInSession = async (
   sessionId: number,
   tasks: Task[]

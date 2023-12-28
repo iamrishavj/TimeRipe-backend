@@ -1,6 +1,7 @@
 // src/api/controllers/session.controller.ts
 import { Request, Response } from "express";
 import * as SessionService from "../services/session.service";
+import { stat } from "fs";
 
 interface CustomRequest extends Request {
   user_id?: string;
@@ -103,6 +104,24 @@ export const deleteTaskinSession = async (req: Request, res: Response) => {
   const { sessionId, taskId } = req.params;
   try {
     const task = await SessionService.deleteTaskinSession(+sessionId, +taskId);
+    return res.json(task);
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteAllStatusTasksinSession = async (
+  req: Request,
+  res: Response
+) => {
+  const { sessionId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const task = await SessionService.deleteAllStatusTasksinSession(
+      +sessionId,
+      status
+    );
     return res.json(task);
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });

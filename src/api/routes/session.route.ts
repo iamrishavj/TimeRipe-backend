@@ -30,6 +30,11 @@ router.delete(
   SessionController.deleteTaskinSession
 );
 
+router.delete(
+  "/:sessionId/tasks",
+  SessionController.deleteAllStatusTasksinSession
+);
+
 router.post(
   "/:sessionId/tasks/bulk",
   SessionController.bulkUploadTasksInSession
